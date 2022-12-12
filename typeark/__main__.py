@@ -1,15 +1,24 @@
-from typeark.font_manager import FontDictionary, Config
-from typeark.remote_manager import FileRemote
+from typeark.fonts import FontDictionary, Config
+from typeark.remote import FileRemote
+from typeark.events import EventsInjector
+from typeark.tools import ToolsManager
+
+from loguru import logger
 
 def run():
-    cfg = Config().generate_config()
+    cfg = Config(logger=logger).generate_config()
     
     if cfg:
-        fd = FontDictionary(cfg)
-        fd.save_json_dict()
+        fd = FontDictionary(logger=logger, config=cfg)
+        #fd.generate_dict()
+        #fd.export_json_dict()
         
-    fr = FileRemote()
-    fr.inject_contents()
+        fr = FileRemote(logger=logger, config=cfg)
+        ei = EventsInjector(logger=logger, remote=fr, config=cfg)
+        tm = ToolsManager(logger=logger, events=ei, config=cfg)
+    
+        tm.activate(5000, 5000)
+        fr.close_session()
     
 if __name__ == '__main__':
     run()
