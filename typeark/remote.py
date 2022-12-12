@@ -1,4 +1,4 @@
-import paramiko, sys
+import paramiko, sys, time
 from io import BytesIO
 
 class FileRemote:
@@ -16,9 +16,9 @@ class FileRemote:
         else:
             sys.exit(1)
         
-        self.active_file = self.file_manager.file(self.__get_input_file(), "ab", -1)
+        self.active_file_path = self.__get_input_file_path()
         
-    def __get_input_file(self):
+    def __get_input_file_path(self):
         self.logger.debug("Getting pen input file")
         
         stdin, stdout, stderr = self.session.exec_command("cat /sys/devices/soc0/machine")
@@ -41,15 +41,17 @@ class FileRemote:
             self.logger.error(f"Could not connect to the ReMarkable: {why}")
     
     def write_file_contents(self, contents) -> None: 
-        try:
-            self.active_file.write(contents)
-        except Exception as why:
-            self.logger.error(f"Could not write {contents} to file: {why}")
-            return why
+        with self.file_manager.open(self.active_file_path, 'a') as file:
+            for event in contents:
+                file.write(event)
+                time.sleep(self.config['waitTime'])
+                try:
+                    file.write(event)
+                except Exception as why:
+                    self.logger.error(f"Could not write {event} to file: {why}")                    
     
     def close_session(self):
-        self.active_file.flush()
-        
+    
         self.file_manager.close()
         self.session.close()
         

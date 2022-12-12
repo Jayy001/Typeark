@@ -15,24 +15,28 @@ class ToolsManager:
             print("Invalid mode given")
 
     def activate(self, start_coord_x, start_coord_y):
-        commands = self.events.pack_commands([
-            [1, self.__mode, 1,],
+        packed_events = self.events.pack_events([
+            [1, self.__mode, 1],
             [1, 330, 0],
             [3, 24, 0],
             [3, 25, 80],
+            self.events.sync(),
             [3, 0, start_coord_x],
             [3, 1, start_coord_y],
             [3, 25, 0],
             [3, 26, 0],
             [3, 27, 0],
+            self.events.sync(),
             [1, 330, 1],
+            self.events.sync()
         ])
-        self.events.inject(commands)
+        self.events.inject(packed_events)
         
     def stop(self):
-        commands = self.events.pack_commands([
+        packed_events = self.events.pack_events([
             [1, 330, 0],
             [3, 25, 80],
             [1, self.__mode, 0],
+            self.events.sync()
         ])
-        self.events.inject(commands)
+        self.events.inject(packed_events)
