@@ -1,10 +1,9 @@
-import struct, time
+import struct, time, sys
 
-class EventsInjector:
-    def __init__(self, logger, remote, config) -> None:
+class EventsManager:
+    def __init__(self, logger, config) -> None:
         self.logger = logger
         self.config = config
-        self.remote = remote
         
     def __pack_values(self, typ, code, value):
         return struct.pack("QHHi", int(time.time()), typ, code, value)
@@ -12,17 +11,19 @@ class EventsInjector:
     def sync(self):
         return self.__pack_values(0, 0, 0)
     
-    def inject(self, events):
-        self.logger.debug("Injecting events")
-        self.remote.write_file_contents(events)
+    def output(self, events):
+        self.logger.debug("Outputting events")
+        
+        for event in events:
+            sys.stdout.buffer.write(event)
     
     def pack_events(self, events):
         results = []
         
         for command in events:
             if type(command) == bytes:
-                self.logger.debug("Sync command added")
                 results.append(command)
+                continue
             
             elif len(command) != 3:
                 self.logger.error("Invalid command given")

@@ -88,6 +88,25 @@ class FontDictionary:
         self.config = config     
         self.current_dictionary = {}  
         
+    def load_json_dict(self):
+        self.logger.debug(f"Importing dictonary from {self.config['dictionaryLocation']}")
+        
+        with open(self.config['dictionaryLocation'], encoding='utf-8') as in_file:
+            self.current_dictionary = json.load(in_file)
+            
+        self.logger.success("Imported to current_dictonary")
+    
+    def letter_to_data(self, letter):
+        self.logger.debug(f"Getting coords for '{letter}'")
+        
+        try:
+            return self.current_dictionary[letter]
+        
+        except Exception as why:
+            self.logger.error(f"Could not import data: {why}")
+            
+            return {}
+        
     def export_json_dict(self) -> None:
         self.logger.debug(f"Attempting to export dictonary to {self.config['dictionaryLocation']}")
         
